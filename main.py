@@ -3,37 +3,64 @@ from pygame.locals import KEYDOWN, K_ESCAPE, QUIT
 import parameters.enums as en
 from Objects.player import Player
 from Objects.robot import Robot
-
-pygame.init()
-clock = pygame.time.Clock()
-screen = pygame.display.set_mode(en.SCREEN_DIM)
+import sys
 
 
-# Groups
-allSprites = pygame.sprite.Group()
+class Game(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((en.WIDTH, en.HEIGHT))
+        self.clock = pygame.time.Clock()
+        self.load_data()
+        self.allSprites = pygame.sprite.Group()
 
-# Run until the user asks to quit
-running = True
-player = Player()
-robot = Robot()
+    def load_data(self):
+        pass
 
-allSprites.add([player, robot])
+    def new(self):
+        """Initialize all variables."""
+        self.allSprites = pygame.sprite.Group()
+        self.player = Player(self, 10, 10)
 
-while running:
-    for event in pygame.event.get():
-        if event.type == KEYDOWN:
-            if event.key == K_ESCAPE:
-                running = False
-        if event.type == QUIT:
-            running = False
-    pressed_keys = pygame.key.get_pressed()
-    player.update(pressed_keys)
+    def quit(self):
+        pygame.quit()
+        sys.exit()
 
-    screen.fill(en.SCREEN_FILL)
-    for entity in allSprites:
-        screen.blit(entity.surf, entity.rect)
+    def events(self):
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    self.quit()
+            if event.type == QUIT:
+                self.quit()
+        pressedKeys = pygame.key.get_pressed()
+        self.player.move_key(pressedKeys)
 
-    pygame.display.flip()
-    clock.tick(en.CLOCK_TICK)
+    def run(self):
+        self.playing = True
+        while self.playing:
+            self.dt = self.clock.tick(en.FPS) / 1000
+            self.events()
+            self.updates()
+            self.draw()
 
-pygame.quit()
+    def updates(self):
+        self.allSprites.update()
+
+    def draw_grid(self):
+        for x in range(0, en.WIDTH, en.TILE_SIZE):
+            pygame.draw.line(self.screen, en.LIGHTGREY, (x, 0), (x, en.HEIGHT))
+        for y in range(0, en.HEIGHT, en.TILE_SIZE):
+            pygame.draw.line(self.screen, en.LIGHTGREY, (0, y), (en.WIDTH, y))
+
+    def draw(self):
+        self.screen.fill(en.BGCOLOR)
+        self.draw_grid()
+        self.allSprites.draw(self.screen)
+        pygame.display.flip()
+
+
+g = Game()
+while True:
+    g.new()
+    g.run()
