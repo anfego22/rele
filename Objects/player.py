@@ -16,8 +16,9 @@ class Player(pygame.sprite.Sprite):
         self.y = y
 
     def move(self, dx: int = 0, dy: int = 0) -> None:
-        self.x += dx
-        self.y += dy
+        if not (self.game.robot.x == self.x + dx and self.game.robot.y == self.y + dy):
+            self.x += dx
+            self.y += dy
 
     def move_key(self, pressKey: Dict):
         if pressKey[K_UP]:

@@ -12,7 +12,6 @@ class Game(pygame.sprite.Sprite):
         self.screen = pygame.display.set_mode((en.WIDTH, en.HEIGHT))
         self.clock = pygame.time.Clock()
         self.load_data()
-        self.allSprites = pygame.sprite.Group()
 
     def load_data(self):
         pass
@@ -20,7 +19,9 @@ class Game(pygame.sprite.Sprite):
     def new(self):
         """Initialize all variables."""
         self.allSprites = pygame.sprite.Group()
+        self.robots = pygame.sprite.Group()
         self.player = Player(self, 10, 10)
+        self.robot = Robot(self, 8, 10)
 
     def quit(self):
         pygame.quit()
