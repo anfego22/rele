@@ -13,8 +13,8 @@ class Player(pg.sprite.Sprite):
         self.image.fill(en.YELLOW)
         self.rect = self.image.get_rect()
         self.vx, self.vy = 0, 0
-        self.x = x
-        self.y = y
+        self.x = x * en.TILE_SIZE
+        self.y = y * en.TILE_SIZE
 
     def move_key(self):
         self.vx, self.vy = 0, 0
@@ -39,6 +39,10 @@ class Player(pg.sprite.Sprite):
         self.y += dy
         self.rect.topleft = (self.x, self.y)
         if pg.sprite.spritecollideany(self, self.game.robots):
+            self.x -= dx
+            self.y -= dy
+            self.rect.topleft = (self.x, self.y)
+        if pg.sprite.spritecollideany(self, self.game.walls):
             self.x -= dx
             self.y -= dy
             self.rect.topleft = (self.x, self.y)

@@ -26,13 +26,15 @@ class Game(pygame.sprite.Sprite):
         self.machineryParts = pygame.sprite.Group()
         self.robots = pygame.sprite.Group()
         self.walls = pygame.sprite.Group()
-        self.player = Player(self, 10, 10)
-        self.robot = Robot(self, 8, 10)
         self.part = Machinery(self)
         for j, row in enumerate(self.map.data):
             for i, col in enumerate(row):
                 if col == "1":
                     Wall(self, i, j)
+                elif col == "P":
+                    self.player = Player(self, i, j)
+                elif col == "R":
+                    self.robot = Robot(self, i, j)
 
     def quit(self):
         pygame.quit()
