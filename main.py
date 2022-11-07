@@ -1,7 +1,9 @@
 import pygame
 from pygame.locals import KEYDOWN, K_ESCAPE, QUIT
+from os import path
 import parameters.enums as en
-from Objects.player import Player
+from Objects.player import Player, Wall
+from Objects.map import Map
 from Objects.robot import Robot
 from Objects.machinery import Machinery
 import sys
@@ -15,16 +17,22 @@ class Game(pygame.sprite.Sprite):
         self.load_data()
 
     def load_data(self):
-        pass
+        game_folder = path.dirname(__file__)
+        self.map = Map(game_folder + "/Static/map.txt")
 
     def new(self):
         """Initialize all variables."""
         self.allSprites = pygame.sprite.Group()
         self.machineryParts = pygame.sprite.Group()
         self.robots = pygame.sprite.Group()
+        self.walls = pygame.sprite.Group()
         self.player = Player(self, 10, 10)
         self.robot = Robot(self, 8, 10)
         self.part = Machinery(self)
+        for j, row in enumerate(self.map.data):
+            for i, col in enumerate(row):
+                if col == "1":
+                    Wall(self, i, j)
 
     def quit(self):
         pygame.quit()

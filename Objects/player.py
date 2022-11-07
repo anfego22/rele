@@ -46,3 +46,16 @@ class Player(pg.sprite.Sprite):
         for b in blockList:
             b.x += dx
             b.y += dy
+
+
+class Wall(pg.sprite.Sprite):
+    def __init__(self, game, x, y):
+        """Create a Wall."""
+        self.groups = game.allSprites, game.walls
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((en.TILE_SIZE, en.TILE_SIZE))
+        self.image.fill(en.WHITE)
+        self.rect = self.image.get_rect()
+        self.rect.x = x * en.TILE_SIZE
+        self.rect.y = y * en.TILE_SIZE
