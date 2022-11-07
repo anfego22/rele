@@ -3,6 +3,7 @@ from pygame.locals import KEYDOWN, K_ESCAPE, QUIT
 import parameters.enums as en
 from Objects.player import Player
 from Objects.robot import Robot
+from Objects.machinery import Machinery
 import sys
 
 
@@ -19,9 +20,11 @@ class Game(pygame.sprite.Sprite):
     def new(self):
         """Initialize all variables."""
         self.allSprites = pygame.sprite.Group()
+        self.machineryParts = pygame.sprite.Group()
         self.robots = pygame.sprite.Group()
         self.player = Player(self, 10, 10)
         self.robot = Robot(self, 8, 10)
+        self.part = Machinery(self)
 
     def quit(self):
         pygame.quit()

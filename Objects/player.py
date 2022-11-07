@@ -1,15 +1,15 @@
-import pygame
+import pygame as pg
 from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT
 import parameters.enums as en
 from typing import Dict
 
 
-class Player(pygame.sprite.Sprite):
+class Player(pg.sprite.Sprite):
     def __init__(self, game, x: int = 0, y: int = 0):
         self.groups = game.allSprites
-        pygame.sprite.Sprite.__init__(self, self.groups)
+        pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pygame.Surface((en.TILE_SIZE, en.TILE_SIZE))
+        self.image = pg.Surface((en.TILE_SIZE, en.TILE_SIZE))
         self.image.fill(en.YELLOW)
         self.rect = self.image.get_rect()
         self.x = x
@@ -19,6 +19,10 @@ class Player(pygame.sprite.Sprite):
         if not (self.game.robot.x == self.x + dx and self.game.robot.y == self.y + dy):
             self.x += dx
             self.y += dy
+        blockList = pg.sprite.spritecollide(self, self.game.machineryParts, False)
+        for b in blockList:
+            b.x = self.x + dx
+            b.y = self.y + dy
 
     def move_key(self, pressKey: Dict):
         if pressKey[K_UP]:
