@@ -13,8 +13,8 @@ class Machinery(pg.sprite.Sprite):
         self.image = pg.Surface((en.TILE_SIZE, en.TILE_SIZE))
         self.image.fill(en.GREEN)
         self.rect = self.image.get_rect()
-        self.x = randint(10, en.GRID_WIDTH - 2) * en.TILE_SIZE
-        self.y = randint(2, en.GRID_HEIGHT - 2) * en.TILE_SIZE
+        self.x = randint(10, en.GRID_WIDTH - 4) * en.TILE_SIZE
+        self.y = randint(4, en.GRID_HEIGHT - 4) * en.TILE_SIZE
         self.ttl = False
 
     def update(self):

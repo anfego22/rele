@@ -31,21 +31,7 @@ class Player(pg.sprite.Sprite):
             self.vx *= 0.71707
             self.vy *= 0.71707
 
-    def update(self):
-        self.move_key()
-        dx = self.vx * self.game.dt
-        dy = self.vy * self.game.dt
-        self.x += dx
-        self.y += dy
-        self.rect.topleft = (self.x, self.y)
-        if pg.sprite.spritecollideany(self, self.game.robots):
-            self.x -= dx
-            self.y -= dy
-            self.rect.topleft = (self.x, self.y)
-        if pg.sprite.spritecollideany(self, self.game.walls):
-            self.x -= dx
-            self.y -= dy
-            self.rect.topleft = (self.x, self.y)
+    def machine_parts_collision(self, dx: float = 0, dy: float = 0):
         blockList = pg.sprite.spritecollide(self, self.game.machineryParts, False)
         for b in blockList:
             b.x += dx
@@ -54,6 +40,29 @@ class Player(pg.sprite.Sprite):
                 b.set_ttl()
                 b.x -= dx
                 b.y -= dy
+
+    def wall_collision(self, dx: float = 0, dy: float = 0):
+        if pg.sprite.spritecollideany(self, self.game.walls):
+            self.x -= dx
+            self.y -= dy
+            self.rect.topleft = (self.x, self.y)
+
+    def robot_collision(self, dx, dy):
+        if pg.sprite.spritecollideany(self, self.game.robots):
+            self.x -= dx
+            self.y -= dy
+            self.rect.topleft = (self.x, self.y)
+
+    def update(self):
+        self.move_key()
+        dx = self.vx * self.game.dt
+        dy = self.vy * self.game.dt
+        self.x += dx
+        self.y += dy
+        self.rect.topleft = (self.x, self.y)
+        self.robot_collision(dx, dy)
+        self.wall_collision(dx, dy)
+        self.machine_parts_collision(dx, dy)
 
 
 class Wall(pg.sprite.Sprite):

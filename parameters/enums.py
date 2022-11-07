@@ -24,4 +24,4 @@ GRID_HEIGHT = HEIGHT / TILE_SIZE
 PLAYER_SPEED = 320
 
 # Machine parts setting
-MACHINE_TTL = 2  # in seconds
+MACHINE_TTL = 1  # in seconds
