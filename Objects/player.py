@@ -50,6 +50,10 @@ class Player(pg.sprite.Sprite):
         for b in blockList:
             b.x += dx
             b.y += dy
+            if pg.sprite.spritecollideany(b, self.game.walls):
+                b.set_ttl()
+                b.x -= dx
+                b.y -= dy
 
 
 class Wall(pg.sprite.Sprite):
