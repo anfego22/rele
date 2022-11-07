@@ -12,28 +12,37 @@ class Player(pg.sprite.Sprite):
         self.image = pg.Surface((en.TILE_SIZE, en.TILE_SIZE))
         self.image.fill(en.YELLOW)
         self.rect = self.image.get_rect()
+        self.vx, self.vy = 0, 0
         self.x = x
         self.y = y
 
-    def move(self, dx: int = 0, dy: int = 0) -> None:
-        if not (self.game.robot.x == self.x + dx and self.game.robot.y == self.y + dy):
-            self.x += dx
-            self.y += dy
-        blockList = pg.sprite.spritecollide(self, self.game.machineryParts, False)
-        for b in blockList:
-            b.x = self.x + dx
-            b.y = self.y + dy
-
-    def move_key(self, pressKey: Dict):
+    def move_key(self):
+        self.vx, self.vy = 0, 0
+        pressKey = pg.key.get_pressed()
         if pressKey[K_UP]:
-            self.move(dy=-1)
+            self.vy = -en.PLAYER_SPEED
         if pressKey[K_DOWN]:
-            self.move(dy=1)
+            self.vy = en.PLAYER_SPEED
         if pressKey[K_RIGHT]:
-            self.move(dx=1)
+            self.vx = en.PLAYER_SPEED
         if pressKey[K_LEFT]:
-            self.move(dx=-1)
+            self.vx = -en.PLAYER_SPEED
+        if self.vx != 0 and self.vy != 0:
+            self.vx *= 0.71707
+            self.vy *= 0.71707
 
     def update(self):
-        self.rect.x = self.x * en.TILE_SIZE
-        self.rect.y = self.y * en.TILE_SIZE
+        self.move_key()
+        dx = self.vx * self.game.dt
+        dy = self.vy * self.game.dt
+        self.x += dx
+        self.y += dy
+        self.rect.topleft = (self.x, self.y)
+        if pg.sprite.spritecollideany(self, self.game.robots):
+            self.x -= dx
+            self.y -= dy
+            self.rect.topleft = (self.x, self.y)
+        blockList = pg.sprite.spritecollide(self, self.game.machineryParts, False)
+        for b in blockList:
+            b.x += dx
+            b.y += dy

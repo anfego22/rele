@@ -16,5 +16,4 @@ class Machinery(pg.sprite.Sprite):
         self.y = randint(2, en.GRID_HEIGHT - 2)
 
     def update(self):
-        self.rect.x = self.x * en.TILE_SIZE
-        self.rect.y = self.y * en.TILE_SIZE
+        self.rect.topleft = (self.x, self.y)

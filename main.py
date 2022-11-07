@@ -37,8 +37,6 @@ class Game(pygame.sprite.Sprite):
                     self.quit()
             if event.type == QUIT:
                 self.quit()
-        pressedKeys = pygame.key.get_pressed()
-        self.player.move_key(pressedKeys)
 
     def run(self):
         self.playing = True
