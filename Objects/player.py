@@ -1,5 +1,6 @@
 import pygame as pg
 from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT
+from Objects.machinery import Machinery
 import parameters.enums as en
 from typing import Dict
 
@@ -31,7 +32,7 @@ class Player(pg.sprite.Sprite):
             self.vx *= 0.71707
             self.vy *= 0.71707
 
-    def machine_parts_collision(self, dx: float = 0, dy: float = 0):
+    def machine_parts_collision(self, dx: float = 0, dy: float = 0) -> None:
         blockList = pg.sprite.spritecollide(self, self.game.machineryParts, False)
         for b in blockList:
             b.x += dx
@@ -40,6 +41,14 @@ class Player(pg.sprite.Sprite):
                 b.set_ttl()
                 b.x -= dx
                 b.y -= dy
+            dest = pg.sprite.spritecollide(b, self.game.destination, False)
+            if not dest:
+                return None
+            dest = dest[0]
+            b.kill()
+            dest.kill()
+            Wall(self.game, dest.x, dest.y)
+            Machinery(self.game)
 
     def wall_collision(self, dx: float = 0, dy: float = 0):
         if pg.sprite.spritecollideany(self, self.game.walls):

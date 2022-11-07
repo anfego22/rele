@@ -5,7 +5,7 @@ import parameters.enums as en
 from Objects.player import Player, Wall
 from Objects.map import Map
 from Objects.robot import Robot
-from Objects.machinery import Machinery
+from Objects.machinery import Machinery, Destiny
 import sys
 
 
@@ -26,6 +26,7 @@ class Game(pygame.sprite.Sprite):
         self.machineryParts = pygame.sprite.Group()
         self.robots = pygame.sprite.Group()
         self.walls = pygame.sprite.Group()
+        self.destination = pygame.sprite.Group()
         self.part = Machinery(self)
         for j, row in enumerate(self.map.data):
             for i, col in enumerate(row):
@@ -35,6 +36,8 @@ class Game(pygame.sprite.Sprite):
                     self.player = Player(self, i, j)
                 elif col == "R":
                     self.robot = Robot(self, i, j)
+                elif col == "D":
+                    Destiny(self, i, j)
 
     def quit(self):
         pygame.quit()
