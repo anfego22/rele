@@ -43,3 +43,33 @@ class Destiny(pg.sprite.Sprite):
         self.x, self.y = x, y
         self.rect.x = self.x * en.TILE_SIZE
         self.rect.y = self.y * en.TILE_SIZE
+
+
+class Levels:
+    def __init__(self, game, dirname: str, sep: str = ","):
+        self.data = self.read_data(dirname, sep)
+        self.game = game
+        self.level = 0
+
+    def read_data(self, dirname: str, sep: str = ",") -> None:
+        with open(dirname, "rt") as f:
+            data = f.readlines()
+            self.levelDict = {}
+            for row in data[1:]:
+                x, y, lv = row.split(sep)
+                if int(lv) in self.levelDict:
+                    self.levelDict[int(lv)].append((int(x), int(y)))
+                else:
+                    self.levelDict[int(lv)] = [(int(x), int(y))]
+
+    def create_level(self) -> None:
+        if self.level not in self.levelDict:
+            return None
+        for x, y in self.levelDict[self.level]:
+            Destiny(self.game, x, y)
+
+    def update(self):
+        if len(self.game.destination) != 0:
+            return None
+        self.level += 1
+        self.create_level()
