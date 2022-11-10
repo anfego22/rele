@@ -43,6 +43,10 @@ class Destiny(pg.sprite.Sprite):
         self.x, self.y = x, y
         self.rect.x = self.x * en.TILE_SIZE
         self.rect.y = self.y * en.TILE_SIZE
+        self.wallRef = None
+
+    def add_wall_ref(self, w):
+        self.wallRef = w
 
 
 class Levels:
@@ -55,12 +59,16 @@ class Levels:
         with open(dirname, "rt") as f:
             data = f.readlines()
             self.levelDict = {}
+            self.maxLevel = 0
             for row in data[1:]:
                 x, y, lv = row.split(sep)
-                if int(lv) in self.levelDict:
-                    self.levelDict[int(lv)].append((int(x), int(y)))
+                lv = int(lv)
+                if lv > self.maxLevel:
+                    self.maxLevel = lv
+                if lv in self.levelDict:
+                    self.levelDict[lv].append((int(x), int(y)))
                 else:
-                    self.levelDict[int(lv)] = [(int(x), int(y))]
+                    self.levelDict[lv] = [(int(x), int(y))]
 
     def create_level(self) -> None:
         if self.level not in self.levelDict:
@@ -69,7 +77,14 @@ class Levels:
             Destiny(self.game, x, y)
 
     def update(self):
-        if len(self.game.destination) != 0:
-            return None
+        nonActiveDest = [d for d in self.game.destination if d.wallRef]
+        if self.level in self.levelDict:
+            if len(nonActiveDest) != len(self.levelDict[self.level]):
+                return None
+        for d in self.game.destination:
+            d.wallRef.kill()
+            d.kill()
         self.level += 1
+        if self.level > self.maxLevel:
+            self.level = 1
         self.create_level()

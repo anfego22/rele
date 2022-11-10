@@ -46,8 +46,8 @@ class Player(pg.sprite.Sprite):
                 return None
             dest = dest[0]
             b.kill()
-            dest.kill()
-            Wall(self.game, dest.x, dest.y)
+            destW = Wall(self.game, dest.x, dest.y)
+            dest.add_wall_ref(destW)
             Machinery(self.game)
 
     def wall_collision(self, dx: float = 0, dy: float = 0):
