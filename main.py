@@ -54,6 +54,8 @@ class Game(pygame.sprite.Sprite):
         self.playing = True
         while self.playing:
             self.dt = self.clock.tick(en.FPS) / 1000
+            window_pixel_matrix = pygame.surfarray.array2d(self.screen)
+            self.robot.predict(window_pixel_matrix)
             self.events()
             self.updates()
             self.draw()
