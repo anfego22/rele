@@ -41,14 +41,6 @@ class Player(pg.sprite.Sprite):
                 b.set_ttl()
                 b.x -= dx
                 b.y -= dy
-            dest = pg.sprite.spritecollide(b, self.game.destination, False)
-            if not dest:
-                return None
-            dest = dest[0]
-            b.kill()
-            destW = Wall(self.game, dest.x, dest.y)
-            dest.add_wall_ref(destW)
-            Machinery(self.game)
 
     def wall_collision(self, dx: float = 0, dy: float = 0):
         if pg.sprite.spritecollideany(self, self.game.walls):
