@@ -64,5 +64,7 @@ class Robot(pg.sprite.Sprite):
         self.machine_parts_collision(dx, dy)
 
     def predict(self, X: np.array) -> int:
-        _, action = self.buffer.getLast()
-        return action
+        data = self.buffer.getLast()
+        if "action" in data:
+            return data["action"]
+        return None

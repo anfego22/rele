@@ -65,8 +65,6 @@ class Player(pg.sprite.Sprite):
 
     def update(self, X: np.array):
         action = self.move_key()
-        if action:
-            self.buffer.add(X, action, self.game.SCORE)
         dx = self.vx * self.game.dt
         dy = self.vy * self.game.dt
         self.x += dx
@@ -75,6 +73,16 @@ class Player(pg.sprite.Sprite):
         self.robot_collision(dx, dy)
         self.wall_collision(dx, dy)
         self.machine_parts_collision(dx, dy)
+        if action:
+            self.buffer.add(
+                {
+                    "obs": X,
+                    "action": action,
+                    "score": self.game.SCORE,
+                    "x": self.x,
+                    "y": self.y,
+                }
+            )
 
 
 class Wall(pg.sprite.Sprite):
