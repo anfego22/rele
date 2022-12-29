@@ -8,6 +8,7 @@ from Objects.robot import Robot
 import numpy as np
 from Objects.machinery import Machinery, Destiny
 import sys
+from Objects.utils import GameBuffer
 
 
 class Game(pygame.sprite.Sprite):
@@ -25,6 +26,7 @@ class Game(pygame.sprite.Sprite):
 
     def new(self):
         """Initialize all variables."""
+        self.buffer = GameBuffer()
         self.allSprites = pygame.sprite.Group()
         self.machineryParts = pygame.sprite.Group()
         self.destination = pygame.sprite.Group()
@@ -38,9 +40,9 @@ class Game(pygame.sprite.Sprite):
                 elif col == "D":
                     self.destiny = Destiny(self, i, j)
                 elif col == "P":
-                    self.player = Player(self, i, j)
+                    self.player = Player(self, self.buffer, i, j)
                 elif col == "R":
-                    self.robot = Robot(self, i, j)
+                    self.robot = Robot(self, self.buffer, i, j)
 
     def quit(self):
         pygame.quit()

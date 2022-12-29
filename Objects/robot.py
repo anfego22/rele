@@ -3,10 +3,11 @@ import pygame as pg
 import parameters.enums as en
 from typing import Dict
 import numpy as np
+from Objects.utils import GameBuffer
 
 
 class Robot(pg.sprite.Sprite):
-    def __init__(self, game, x: int = 0, y: int = 0):
+    def __init__(self, game, buffer: GameBuffer, x: int = 0, y: int = 0):
         self.groups = game.allSprites, game.robots
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
@@ -18,16 +19,17 @@ class Robot(pg.sprite.Sprite):
         self.y = y * en.TILE_SIZE
         self.actions = [pg.K_UP, pg.K_RIGHT, pg.K_DOWN, pg.K_LEFT]
         self.lastScore = 0
+        self.buffer = buffer
 
-    def move(self, action: int) -> None:
+    def move(self, pressKey) -> None:
         self.vx, self.vy = 0, 0
-        if action == pg.K_UP:
+        if pressKey[pg.K_UP]:
             self.vy = -en.PLAYER_SPEED
-        if action == pg.K_DOWN:
+        if pressKey[pg.K_DOWN]:
             self.vy = en.PLAYER_SPEED
-        if action == pg.K_RIGHT:
+        if pressKey[pg.K_RIGHT]:
             self.vx = en.PLAYER_SPEED
-        if action == pg.K_LEFT:
+        if pressKey[pg.K_LEFT]:
             self.vx = -en.PLAYER_SPEED
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.71707
@@ -41,7 +43,8 @@ class Robot(pg.sprite.Sprite):
 
     def update(self, X: np.array):
         action = self.predict(X)
-        self.move(action)
+        if action:
+            self.move(action)
         dx = self.vx * self.game.dt
         dy = self.vy * self.game.dt
         self.x += dx
@@ -50,5 +53,5 @@ class Robot(pg.sprite.Sprite):
         self.wall_collision(dx, dy)
 
     def predict(self, X: np.array) -> int:
-        randomA = random.choice(self.actions)
-        return randomA
+        _, action = self.buffer.getLast()
+        return action
