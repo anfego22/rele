@@ -41,6 +41,16 @@ class Robot(pg.sprite.Sprite):
             self.y -= dy
             self.rect.topleft = (self.x, self.y)
 
+    def machine_parts_collision(self, dx: float = 0, dy: float = 0) -> None:
+        blockList = pg.sprite.spritecollide(self, self.game.machineryParts, False)
+        for b in blockList:
+            b.x += dx
+            b.y += dy
+            if pg.sprite.spritecollideany(b, self.game.walls):
+                b.set_ttl()
+                b.x -= dx
+                b.y -= dy
+
     def update(self, X: np.array):
         action = self.predict(X)
         if action:
@@ -51,6 +61,7 @@ class Robot(pg.sprite.Sprite):
         self.y += dy
         self.rect.topleft = (self.x, self.y)
         self.wall_collision(dx, dy)
+        self.machine_parts_collision(dx, dy)
 
     def predict(self, X: np.array) -> int:
         _, action = self.buffer.getLast()
