@@ -5,6 +5,7 @@ import parameters.enums as en
 from Objects.player import Player, Wall
 from Objects.map import Map
 from Objects.robot import Robot
+import numpy as np
 from Objects.machinery import Machinery, Destiny
 import sys
 
@@ -58,13 +59,16 @@ class Game(pygame.sprite.Sprite):
         while self.playing:
             self.dt = self.clock.tick(en.FPS) / 1000
             window_pixel_matrix = pygame.surfarray.array2d(self.screen)
-            self.robot.predict(window_pixel_matrix)
             self.events()
-            self.updates()
+            self.updates(windowPixel=window_pixel_matrix)
             self.draw()
 
-    def updates(self):
-        self.allSprites.update()
+    def updates(self, **args):
+        for sprite in self.allSprites:
+            if isinstance(sprite, Robot) or isinstance(sprite, Player):
+                sprite.update(args["windowPixel"])
+            else:
+                sprite.update()
 
     def draw_grid(self):
         for x in range(0, en.WIDTH, en.TILE_SIZE):

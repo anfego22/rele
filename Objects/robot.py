@@ -17,6 +17,7 @@ class Robot(pg.sprite.Sprite):
         self.x = x * en.TILE_SIZE
         self.y = y * en.TILE_SIZE
         self.actions = [pg.K_UP, pg.K_RIGHT, pg.K_DOWN, pg.K_LEFT]
+        self.lastScore = 0
 
     def move(self, action: int) -> None:
         self.vx, self.vy = 0, 0
@@ -38,8 +39,9 @@ class Robot(pg.sprite.Sprite):
             self.y -= dy
             self.rect.topleft = (self.x, self.y)
 
-    def update(self):
-        self.move(self.nextAction)
+    def update(self, X: np.array):
+        action = self.predict(X)
+        self.move(action)
         dx = self.vx * self.game.dt
         dy = self.vy * self.game.dt
         self.x += dx
@@ -47,6 +49,6 @@ class Robot(pg.sprite.Sprite):
         self.rect.topleft = (self.x, self.y)
         self.wall_collision(dx, dy)
 
-    def predict(self, X: np.array) -> None:
+    def predict(self, X: np.array) -> int:
         randomA = random.choice(self.actions)
-        self.nextAction = randomA
+        return randomA

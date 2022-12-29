@@ -3,6 +3,7 @@ from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT
 from Objects.machinery import Machinery
 import parameters.enums as en
 from typing import Dict
+import numpy as np
 
 
 class Player(pg.sprite.Sprite):
@@ -54,7 +55,7 @@ class Player(pg.sprite.Sprite):
             self.y -= dy
             self.rect.topleft = (self.x, self.y)
 
-    def update(self):
+    def update(self, X: np.array):
         self.move_key()
         dx = self.vx * self.game.dt
         dy = self.vy * self.game.dt
@@ -77,3 +78,18 @@ class Wall(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x * en.TILE_SIZE
         self.rect.y = y * en.TILE_SIZE
+
+
+class PlayerActionBuffer(object):
+    """Class to store player history of moves."""
+
+    def __init__(self, maxSize: int = 64) -> None:
+        self.history = []
+        self.maxSize = maxSize
+
+    def update(self, X: np.array, action: int) -> None:
+        if len(self.history) < self.maxSize:
+            self.history.append((X, action))
+            return None
+        self.history.pop(0)
+        self.history.append((X, action))
