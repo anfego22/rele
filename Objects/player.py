@@ -66,7 +66,7 @@ class Player(pg.sprite.Sprite):
     def update(self, X: np.array):
         action = self.move_key()
         if action:
-            self.buffer.add(X, action)
+            self.buffer.add(X, action, self.game.SCORE)
         dx = self.vx * self.game.dt
         dy = self.vy * self.game.dt
         self.x += dx

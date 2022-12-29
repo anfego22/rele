@@ -9,7 +9,7 @@ class GameBuffer(object):
         self.history = []
         self.maxSize = maxSize
 
-    def add(self, X: np.array, action: int) -> None:
+    def add(self, X: np.array, action: int, score: int) -> None:
         if len(self.history) < self.maxSize:
             self.history.append((X, action))
             return None
