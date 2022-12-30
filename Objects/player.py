@@ -4,7 +4,8 @@ from Objects.machinery import Machinery
 import parameters.enums as en
 from typing import Dict
 import numpy as np
-from Objects.utils import GameBuffer
+import torch
+from Objects.utils import GameBuffer, actions_to_plane, actions_to_ohe
 
 
 class Player(pg.sprite.Sprite):
@@ -19,27 +20,26 @@ class Player(pg.sprite.Sprite):
         self.x = x * en.TILE_SIZE
         self.y = y * en.TILE_SIZE
         self.buffer = buffer
+        self.obs = []
+        self.lastAct = torch.zeros((1, 60, 60))
 
     def move_key(self):
         self.vx, self.vy = 0, 0
         pressKey = pg.key.get_pressed()
-        action = None
         if pressKey[K_UP]:
             self.vy = -en.PLAYER_SPEED
-            action = pressKey
         if pressKey[K_DOWN]:
             self.vy = en.PLAYER_SPEED
-            action = pressKey
         if pressKey[K_RIGHT]:
             self.vx = en.PLAYER_SPEED
-            action = pressKey
         if pressKey[K_LEFT]:
             self.vx = -en.PLAYER_SPEED
-            action = pressKey
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.71707
             self.vy *= 0.71707
-        return action
+        planeAct = actions_to_plane(pressKey)
+        action = actions_to_ohe(pressKey)
+        return planeAct, action
 
     def machine_parts_collision(self, dx: float = 0, dy: float = 0) -> None:
         blockList = pg.sprite.spritecollide(self, self.game.machineryParts, False)
@@ -63,6 +63,13 @@ class Player(pg.sprite.Sprite):
             self.y -= dy
             self.rect.topleft = (self.x, self.y)
 
+    def make_obs(self, X: np.array):
+        if len(self.obs) > en.PREV_OBS:
+            self.obs.pop(0)
+        newObs = torch.cat([X, self.lastAct], 1)
+        self.obs.append(newObs)
+        return torch.cat(self.obs)
+
     def update(self, X: np.array):
         action = self.move_key()
         dx = self.vx * self.game.dt
@@ -73,16 +80,16 @@ class Player(pg.sprite.Sprite):
         self.robot_collision(dx, dy)
         self.wall_collision(dx, dy)
         self.machine_parts_collision(dx, dy)
-        if action:
-            self.buffer.add(
-                {
-                    "obs": X,
-                    "action": action,
-                    "score": self.game.SCORE,
-                    "x": self.x,
-                    "y": self.y,
-                }
-            )
+        self.buffer.add(
+            {
+                "obs": self.make_obs(X),
+                "action": action,
+                "score": self.game.SCORE,
+                "x": self.x,
+                "y": self.y,
+            }
+        )
+        self.lastAct = action
 
 
 class Wall(pg.sprite.Sprite):

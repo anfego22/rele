@@ -1,26 +1,54 @@
 import numpy as np
 import torch
 import torch.nn as nn
+import pickle
+import pygame as pg
+from math import prod
+
+
+def actions_to_ohe(pressKey):
+    return torch.Tensor(
+        [int(pressKey[n]) for n in (pg.K_UP, pg.K_RIGHT, pg.K_DOWN, pg.K_LEFT)]
+    )
+
+
+def actions_to_plane(pressKey, dim: tuple = (60, 60)):
+    """Convert a hot one encoded tensor into a plane of dims."""
+    if len(pressKey) > prod(dim):
+        raise Exception(f"Can't encode {len(pressKey)} vector into a {dim} matrix")
+    res = [0] * prod(dim)
+    for i, el in enumerate(pressKey):
+        res[i] = 1 if el in (pg.K_UP, pg.K_RIGHT, pg.K_DOWN, pg.K_LEFT) else 0
+    res = torch.Tensor(res)
+    return res.reshape(dim)[None, :]
 
 
 class GameBuffer(object):
     """Class to store player history of moves."""
 
-    def __init__(self, maxSize: int = 64) -> None:
+    def __init__(self, batchSize: int = 32, maxSize: int = None) -> None:
         self.history = []
-        self.maxSize = maxSize
+        self.maxSize = maxSize if maxSize else float("inf")
+        self.batchSize = batchSize
 
     def add(self, data: dict) -> None:
-        if len(self.history) < self.maxSize:
-            self.history.append(data)
-            return None
-        self.history.pop(0)
+        if len(self.history) > self.maxSize:
+            self.history.pop(0)
         self.history.append(data)
+        if data["score"] != 0:
+            with open("history", "wb") as f:
+                pickle.dump(self, f)
+        return None
 
-    def getLast(self):
-        if len(self.history) > 0:
-            return self.history[-1]
-        return {}
+    def get_sup_batch(
+        self,
+    ):
+        if len(self.history) < self.batchSize:
+            return None
+        index = np.random.randint(0, len(self.history), self.batchSize)
+        obs = torch.stack([self.history[i]["obs"] for i in index])
+        act = torch.stack([self.history[i]["action"] for i in index])
+        return (obs, act)
 
 
 class BasicBlock(nn.Module):
@@ -29,13 +57,13 @@ class BasicBlock(nn.Module):
     def __init__(self, in_planes, planes, stride=1):
         super().__init__()
         self.stride = stride
+        self.in_planes = in_planes
+        self.planes = planes
         self.block = nn.Sequential(
-            nn.Conv2d(
-                in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
-            ),
+            nn.Conv2d(in_planes, planes, 3, stride, "same", bias=False),
             nn.BatchNorm2d(planes),
             nn.ReLU(),
-            nn.Conv2d(planes, planes, kernel_size=3, padding=1, stride=1, bias=False),
+            nn.Conv2d(planes, planes, 3, stride, "same", bias=False),
             nn.BatchNorm2d(planes),
             nn.ReLU(),
         )
@@ -45,6 +73,7 @@ class BasicBlock(nn.Module):
                     in_planes,
                     self.expansion * planes,
                     kernel_size=1,
+                    padding="same",
                     stride=stride,
                     bias=False,
                 ),
@@ -53,7 +82,7 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         out = self.block(x)
-        if self.stride != 1:
+        if self.stride != 1 or self.planes != self.in_planes:
             out = out + self.down(x)
         else:
             out = out + x
@@ -65,7 +94,7 @@ class DownSample(nn.Module):
     def __init__(self, inpChannels: int, outChannels: int):
         super().__init__()
         self.down = nn.Sequential(
-            nn.Conv2d(inpChannels, outChannels, 3, 1),
+            nn.Conv2d(inpChannels, outChannels, 3, 1, "same"),
             BasicBlock(outChannels, outChannels),
             nn.AvgPool2d(3, 2, 1),
         )
