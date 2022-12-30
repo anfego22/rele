@@ -60,8 +60,8 @@ class Game(pygame.sprite.Sprite):
     def get_screen(self):
         screen = pygame.transform.scale(self.screen, (60, 60))
         screen = np.array(pygame.surfarray.array3d(screen))
-        screen = screen.transpose((1, 2, 0))
-        return torch.from_numpy(screen)[None, :]
+        screen = screen.transpose((2, 1, 0))
+        return torch.from_numpy(screen)
 
     def run(self):
         self.playing = True
