@@ -1,9 +1,11 @@
 import random
+import torch
 import pygame as pg
 import parameters.enums as en
 from typing import Dict
 import numpy as np
 from Objects.utils import GameBuffer
+from Objects.basic import Brain
 
 
 class Robot(pg.sprite.Sprite):
@@ -20,6 +22,7 @@ class Robot(pg.sprite.Sprite):
         self.actions = [pg.K_UP, pg.K_RIGHT, pg.K_DOWN, pg.K_LEFT]
         self.lastScore = 0
         self.buffer = buffer
+        self.brain = Brain([3, 60, 60], 4)
 
     def move(self, pressKey) -> None:
         self.vx, self.vy = 0, 0
@@ -64,7 +67,8 @@ class Robot(pg.sprite.Sprite):
         self.machine_parts_collision(dx, dy)
 
     def predict(self, X: np.array) -> int:
-        data = self.buffer.getLast()
-        if "action" in data:
-            return data["action"]
+        with torch.no_grad():
+            if len(self.buffer.history) > en.PREV_OBS:
+                policy = self.brain.act(self.buffer.history[-1]["obs"][None, :])
+                return np.random.choice(self.actions, p=policy.squeeze())
         return None

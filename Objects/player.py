@@ -63,15 +63,16 @@ class Player(pg.sprite.Sprite):
             self.y -= dy
             self.rect.topleft = (self.x, self.y)
 
-    def make_obs(self, X: np.array):
+    def make_obs(self, X: torch.Tensor):
         if len(self.obs) > en.PREV_OBS:
             self.obs.pop(0)
-        newObs = torch.cat([X, self.lastAct], 1)
-        self.obs.append(newObs)
         return torch.cat(self.obs)
 
     def update(self, X: np.array):
-        action = self.move_key()
+        newObs = torch.cat([X, self.lastAct], 0)
+        self.obs.append(newObs)
+        planeAction, action = self.move_key()
+        self.lastAct = planeAction
         dx = self.vx * self.game.dt
         dy = self.vy * self.game.dt
         self.x += dx
@@ -80,16 +81,16 @@ class Player(pg.sprite.Sprite):
         self.robot_collision(dx, dy)
         self.wall_collision(dx, dy)
         self.machine_parts_collision(dx, dy)
-        self.buffer.add(
-            {
-                "obs": self.make_obs(X),
-                "action": action,
-                "score": self.game.SCORE,
-                "x": self.x,
-                "y": self.y,
-            }
-        )
-        self.lastAct = action
+        if len(self.obs) >= en.PREV_OBS:
+            self.buffer.add(
+                {
+                    "obs": self.make_obs(X),
+                    "action": action,
+                    "score": self.game.SCORE,
+                    "x": self.x,
+                    "y": self.y,
+                }
+            )
 
 
 class Wall(pg.sprite.Sprite):
