@@ -35,9 +35,6 @@ class GameBuffer(object):
         if len(self.history) > self.maxSize:
             self.history.pop(0)
         self.history.append(data)
-        if data["score"] != 0:
-            with open("history", "wb") as f:
-                pickle.dump(self, f)
         return None
 
     def get_sup_batch(

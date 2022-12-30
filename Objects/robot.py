@@ -26,13 +26,13 @@ class Robot(pg.sprite.Sprite):
 
     def move(self, pressKey) -> None:
         self.vx, self.vy = 0, 0
-        if pressKey[pg.K_UP]:
+        if pressKey == pg.K_UP:
             self.vy = -en.PLAYER_SPEED
-        if pressKey[pg.K_DOWN]:
+        if pressKey == pg.K_DOWN:
             self.vy = en.PLAYER_SPEED
-        if pressKey[pg.K_RIGHT]:
+        if pressKey == pg.K_RIGHT:
             self.vx = en.PLAYER_SPEED
-        if pressKey[pg.K_LEFT]:
+        if pressKey == pg.K_LEFT:
             self.vx = -en.PLAYER_SPEED
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.71707
@@ -70,5 +70,5 @@ class Robot(pg.sprite.Sprite):
         with torch.no_grad():
             if len(self.buffer.history) > en.PREV_OBS:
                 policy = self.brain.act(self.buffer.history[-1]["obs"][None, :])
-                return np.random.choice(self.actions, p=policy.squeeze())
+                return np.random.choice(self.actions, p=policy[0])
         return None
