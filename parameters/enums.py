@@ -26,3 +26,6 @@ PLAYER_SPEED = 320
 # Machine parts setting
 MACHINE_TTL = 1  # in seconds
 MACHINE_COLOR_VALUES = [(WHITE, 5), (RED, -8), (GREEN, 3), (WHITE, 3)]
+
+# ROBOT SETUP
+PREV_OBS = 3

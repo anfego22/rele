@@ -8,6 +8,7 @@ from Objects.robot import Robot
 import numpy as np
 from Objects.machinery import Machinery, Destiny
 import sys
+import torch
 from Objects.utils import GameBuffer
 
 
@@ -26,7 +27,7 @@ class Game(pygame.sprite.Sprite):
 
     def new(self):
         """Initialize all variables."""
-        self.buffer = GameBuffer()
+        self.buffer = GameBuffer(en.PREV_OBS)
         self.allSprites = pygame.sprite.Group()
         self.machineryParts = pygame.sprite.Group()
         self.destination = pygame.sprite.Group()
@@ -56,13 +57,19 @@ class Game(pygame.sprite.Sprite):
             if event.type == QUIT:
                 self.quit()
 
+    def get_screen(self):
+        screen = pygame.transform.scale(self.screen, (60, 60))
+        screen = np.array(pygame.surfarray.array3d(screen))
+        screen = screen.transpose((1, 2, 0))
+        return torch.from_numpy(screen)[None, :]
+
     def run(self):
         self.playing = True
         while self.playing:
             self.dt = self.clock.tick(en.FPS) / 1000
-            window_pixel_matrix = pygame.surfarray.array2d(self.screen)
+            screenMatrix = self.get_screen()
             self.events()
-            self.updates(windowPixel=window_pixel_matrix)
+            self.updates(windowPixel=screenMatrix)
             self.draw()
 
     def updates(self, **args):
