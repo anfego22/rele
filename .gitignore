@@ -2,3 +2,4 @@ env
 *.pyc
 Images
 .vscode
+*Checkpoint
