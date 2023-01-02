@@ -3,10 +3,13 @@ import parameters.enums as en
 import numpy as np
 from Objects.utils import GameBuffer
 from Objects.basic import Brain
+import pickle
 
 
 class Robot(pg.sprite.Sprite):
-    def __init__(self, game, buffer: GameBuffer, x: int = 0, y: int = 0):
+    def __init__(
+        self, game, buffer: GameBuffer, x: int = 0, y: int = 0, checkpoint: str = None
+    ):
         self.groups = game.allSprites, game.robots
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
@@ -20,6 +23,10 @@ class Robot(pg.sprite.Sprite):
         self.lastScore = 0
         self.buffer = buffer
         self.brain = Brain([3, 60, 60], 4)
+        if checkpoint:
+            with open(checkpoint, "rb") as f:
+                self.brain = pickle.load(f)
+        self.checkpoint = checkpoint if checkpoint else "robotCheckpoint"
 
     def move(self, pressKey) -> None:
         self.vx, self.vy = 0, 0
@@ -70,5 +77,10 @@ class Robot(pg.sprite.Sprite):
         return None
 
     def train(self) -> None:
-        obs, act = self.buffer.get_sup_batch()
-        self.brain.train({"obs": obs, "act": act})
+        for i in range(10):
+            obs, act = self.buffer.get_sup_batch()
+            self.brain.train({"obs": obs, "act": act})
+
+    def save(self) -> None:
+        with open(self.checkpoint, "wb") as f:
+            pickle.dump(self.brain, f)

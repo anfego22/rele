@@ -21,6 +21,7 @@ class Game(pygame.sprite.Sprite):
         self.screen = pygame.display.set_mode((en.WIDTH, en.HEIGHT))
         self.clock = pygame.time.Clock()
         self.load_data()
+        self.checkpoint = "robotCheckpoint" if path.exists("robotCheckpoint") else None
 
     def load_data(self):
         game_folder = path.dirname(__file__)
@@ -44,11 +45,7 @@ class Game(pygame.sprite.Sprite):
                 elif col == "P":
                     self.player = Player(self, self.buffer, i, j)
                 elif col == "R":
-                    try:
-                        with open("robot", "rb") as f:
-                            self.robot = pickle.load(f)
-                    except:
-                        self.robot = Robot(self, self.buffer, i, j)
+                    self.robot = Robot(self, self.buffer, i, j, self.checkpoint)
 
     def quit(self):
         pygame.quit()
@@ -58,12 +55,10 @@ class Game(pygame.sprite.Sprite):
         for event in pygame.event.get():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    with open("robot", "wb") as f:
-                        pickle.dump(self.robot, f)
+                    self.robot.save()
                     self.quit()
             if event.type == QUIT:
-                with open("robot", "wb") as f:
-                    pickle.dump(self.robot, f)
+                self.robot.save()
                 self.quit()
 
     def get_screen(self):
