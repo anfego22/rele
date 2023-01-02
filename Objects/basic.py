@@ -45,7 +45,7 @@ class Brain(object):
 
     def train(self, batch: dict):
         aHat = self.supe(batch["obs"])
-        loss = nn.CrossEntropyLoss()(aHat, batch["action"])
+        loss = nn.CrossEntropyLoss()(aHat, batch["act"])
 
         self.optim.zero_grad()
         loss.backward()

@@ -10,6 +10,7 @@ from Objects.machinery import Machinery, Destiny
 import sys
 import torch
 from Objects.utils import GameBuffer
+import pickle
 
 
 class Game(pygame.sprite.Sprite):
@@ -27,7 +28,7 @@ class Game(pygame.sprite.Sprite):
 
     def new(self):
         """Initialize all variables."""
-        self.buffer = GameBuffer(en.PREV_OBS)
+        self.buffer = GameBuffer()
         self.allSprites = pygame.sprite.Group()
         self.machineryParts = pygame.sprite.Group()
         self.destination = pygame.sprite.Group()
@@ -43,7 +44,11 @@ class Game(pygame.sprite.Sprite):
                 elif col == "P":
                     self.player = Player(self, self.buffer, i, j)
                 elif col == "R":
-                    self.robot = Robot(self, self.buffer, i, j)
+                    try:
+                        with open("robot", "rb") as f:
+                            self.robot = pickle.load(f)
+                    except:
+                        self.robot = Robot(self, self.buffer, i, j)
 
     def quit(self):
         pygame.quit()
@@ -53,8 +58,12 @@ class Game(pygame.sprite.Sprite):
         for event in pygame.event.get():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
+                    with open("robot", "wb") as f:
+                        pickle.dump(self.robot, f)
                     self.quit()
             if event.type == QUIT:
+                with open("robot", "wb") as f:
+                    pickle.dump(self.robot, f)
                 self.quit()
 
     def get_screen(self):
@@ -65,12 +74,16 @@ class Game(pygame.sprite.Sprite):
 
     def run(self):
         self.playing = True
+        prevScore = self.SCORE
         while self.playing:
             self.dt = self.clock.tick(en.FPS) / 1000
             screenMatrix = self.get_screen()
             self.events()
             self.updates(windowPixel=screenMatrix)
             self.draw()
+            if prevScore != self.SCORE:
+                self.robot.train()
+                prevScore = self.SCORE
 
     def updates(self, **args):
         for sprite in self.allSprites:

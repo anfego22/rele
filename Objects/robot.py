@@ -68,3 +68,7 @@ class Robot(pg.sprite.Sprite):
             policy = self.brain.act(self.buffer.history[-1]["obs"][None, :])
             return np.random.choice(self.actions, p=policy[0])
         return None
+
+    def train(self) -> None:
+        obs, act = self.buffer.get_sup_batch()
+        self.brain.train({"obs": obs, "act": act})

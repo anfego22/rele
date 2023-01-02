@@ -30,6 +30,7 @@ class GameBuffer(object):
         self.history = []
         self.maxSize = maxSize if maxSize else float("inf")
         self.batchSize = batchSize
+        self.importance = {}
 
     def add(self, data: dict) -> None:
         if len(self.history) > self.maxSize:
