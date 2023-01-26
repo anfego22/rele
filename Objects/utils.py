@@ -1,9 +1,10 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import pickle
 import pygame as pg
 from math import prod
+import ray
+import parameters.enums as en
 
 
 def actions_to_ohe(pressKey):
@@ -23,6 +24,7 @@ def actions_to_plane(pressKey, dim: tuple = (60, 60)):
     return res.reshape(dim)[None, :]
 
 
+@ray.remote
 class GameBuffer(object):
     """Class to store player history of moves."""
 
@@ -38,15 +40,21 @@ class GameBuffer(object):
         self.history.append(data)
         return None
 
-    def get_sup_batch(
-        self,
-    ):
-        if len(self.history) < self.batchSize:
+    def get_sup_batch(self):
+        if self.len() < self.batchSize:
             return None
         index = np.random.randint(0, len(self.history), self.batchSize)
         obs = torch.stack([self.history[i]["obs"] for i in index])
         act = torch.stack([self.history[i]["action"] for i in index])
         return (obs, act)
+
+    def len(self) -> int:
+        return len(self.history)
+
+    def get_history(self, i: int):
+        if abs(i) < self.len():
+            return self.history[i]
+        return None
 
 
 class BasicBlock(nn.Module):

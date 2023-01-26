@@ -4,6 +4,8 @@ import Objects.utils as ut
 import parameters.enums as en
 from math import prod
 import torch.optim as optim
+import ray
+import time
 
 
 class Supervised(nn.Module):
@@ -33,6 +35,7 @@ class Supervised(nn.Module):
         return out
 
 
+@ray.remote
 class Brain(object):
     def __init__(self, inputDim: list, actionSpace: int):
         self.channels = inputDim[0]
@@ -43,7 +46,7 @@ class Brain(object):
         self.supe = Supervised(self.inputDim, self.actionSpace)
         self.optim = optim.Adam(self.supe.parameters(), lr=1e-4, weight_decay=1e-5)
 
-    def train(self, batch: dict):
+    def train_step(self, batch: dict):
         aHat = self.supe(batch["obs"])
         loss = nn.CrossEntropyLoss()(aHat, batch["act"])
 
@@ -57,3 +60,13 @@ class Brain(object):
         with torch.no_grad():
             logits = self.supe(obs)
             return nn.Softmax(1)(logits).numpy()
+
+    def train(self, buffer: ut.GameBuffer):
+        while ray.get(buffer.len.remote()) < en.BATCH_SIZE:
+            time.sleep(0.1)
+        trainStep = 0
+        while True:
+            obs, act = buffer.get_sup_batch.remote()
+            loss = self.train_step({"obs": obs, "act": act})
+            print(f"loss: {loss} step: {trainStep}")
+            trainStep += 1

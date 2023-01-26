@@ -1,14 +1,21 @@
 import pygame as pg
 import parameters.enums as en
 import numpy as np
-from Objects.utils import GameBuffer
+import Objects.utils as ut
 from Objects.basic import Brain
 import pickle
+from os import path
+import ray
 
 
 class Robot(pg.sprite.Sprite):
     def __init__(
-        self, game, buffer: GameBuffer, x: int = 0, y: int = 0, checkpoint: str = None
+        self,
+        game,
+        buffer: ut.GameBuffer,
+        x: int = 0,
+        y: int = 0,
+        checkpoint: str = None,
     ):
         self.groups = game.allSprites, game.robots
         pg.sprite.Sprite.__init__(self, self.groups)
@@ -22,11 +29,13 @@ class Robot(pg.sprite.Sprite):
         self.actions = [pg.K_UP, pg.K_RIGHT, pg.K_DOWN, pg.K_LEFT]
         self.lastScore = 0
         self.buffer = buffer
-        self.brain = Brain([3, 60, 60], 4)
-        if checkpoint:
+        if checkpoint and path.exists(checkpoint):
             with open(checkpoint, "rb") as f:
                 self.brain = pickle.load(f)
+        else:
+            self.brain = Brain.remote([3, 60, 60], 4)
         self.checkpoint = checkpoint if checkpoint else "robotCheckpoint"
+        self.brain.train.remote(buffer)
 
     def move(self, pressKey) -> None:
         self.vx, self.vy = 0, 0
@@ -71,15 +80,11 @@ class Robot(pg.sprite.Sprite):
         self.machine_parts_collision(dx, dy)
 
     def predict(self, X: np.array) -> int:
-        if len(self.buffer.history) > en.PREV_OBS:
-            policy = self.brain.act(self.buffer.history[-1]["obs"][None, :])
+        if ray.get(self.buffer.len.remote()) > en.PREV_OBS:
+            lastObs = ray.get(self.buffer.get_history.remote(-1))["obs"][None, :]
+            policy = ray.get(self.brain.act.remote(lastObs))
             return np.random.choice(self.actions, p=policy[0])
         return None
-
-    def train(self) -> None:
-        for i in range(10):
-            obs, act = self.buffer.get_sup_batch()
-            self.brain.train({"obs": obs, "act": act})
 
     def save(self) -> None:
         with open(self.checkpoint, "wb") as f:

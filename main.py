@@ -29,7 +29,7 @@ class Game(pygame.sprite.Sprite):
 
     def new(self):
         """Initialize all variables."""
-        self.buffer = GameBuffer()
+        self.buffer = GameBuffer.remote()
         self.allSprites = pygame.sprite.Group()
         self.machineryParts = pygame.sprite.Group()
         self.destination = pygame.sprite.Group()
@@ -69,16 +69,12 @@ class Game(pygame.sprite.Sprite):
 
     def run(self):
         self.playing = True
-        prevScore = self.SCORE
         while self.playing:
             self.dt = self.clock.tick(en.FPS) / 1000
             screenMatrix = self.get_screen()
             self.events()
             self.updates(windowPixel=screenMatrix)
             self.draw()
-            if prevScore != self.SCORE:
-                self.robot.train()
-                prevScore = self.SCORE
 
     def updates(self, **args):
         for sprite in self.allSprites:

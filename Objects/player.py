@@ -82,7 +82,7 @@ class Player(pg.sprite.Sprite):
         self.wall_collision(dx, dy)
         self.machine_parts_collision(dx, dy)
         if len(self.obs) >= en.PREV_OBS:
-            self.buffer.add(
+            self.buffer.add.remote(
                 {
                     "obs": self.make_obs(X),
                     "action": action,
